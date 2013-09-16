@@ -2,51 +2,62 @@
 <html lang="en" ng-app>
   <head>
     <meta charset="utf-8">
-    <title>Nexmo SMS Proxy</title>
+    <title>SMS Proxy Example - Nexmo</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="description" content="">
-    <meta name="author" content="">
 
-    <!-- Le styles -->
-    <link href="bootstrap/css/bootstrap.css" rel="stylesheet">
-    <style>
-      body {
-        padding-top: 60px; /* 60px to make the container go all the way to the bottom of the topbar */
-      }
-    </style>
-    <link href="bootstrap/css/bootstrap-responsive.css" rel="stylesheet">
-
-    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
-    <!--[if lt IE 9]>
-      <script src="../assets/js/html5shiv.js"></script>
-    <![endif]-->
+    <link href="//netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" rel="stylesheet">
   </head>
 
   <body>
+  <div class="container">
+      <div class="page-header">
+          <h1>SMS Proxy Service</h1>
+          <p>These people are connected right now.</p>
+      </div>
+  </div>
 
-    <div class="container" ng-controller="DataStuff">
+  <div class="container" ng-controller="DataStuff">
 
-      <h1>SMS Proxy Service</h1>
-      <p>These people are connected right now.</p>
-
-      <div class="row">
-        <div ng-repeat="proxy in data" class="span3">
-          <ul class="thumbnails ">
-            <li ng-repeat="user in proxy" class="span1">
-              <span class="thumbnail">
-                <img src="{{user.gravatar}}" alt="">
-                <p class="text-center">{{user.username}}</p>
-              </span>
-            </li>
-          </ul>
+    <div class="row">
+      <div ng-repeat="proxy in data" class="col-lg-3" >
+        <div class="panel panel-default">
+          <div class="panel-heading"><a ng-click="select(proxy)" data-toggle="modal" href="#log"> {{proxy.users.0.number}} / {{proxy.users.1.number}} <span class="badge pull-right">{{proxy.messages.length}}</span> </a></div>
+          <div class="panel-body text-center">
+            <img ng-repeat="user in proxy.users" src="http://www.gravatar.com/avatar/{{user.md5}}?s=100&d=identicon&r=g" alt="{{user.email}}">
+          </div>
         </div>
       </div>
-    </div> <!-- /container -->
+    </div>
 
-    <!-- Le javascript
-    ================================================== -->
-    <!-- Placed at the end of the document so the pages load faster -->
-    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.6/angular.min.js"></script>    
+    <div class="modal fade" id="log">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+            <h4 class="modal-title">{{data[selected].users.0.number}} / {{data[selected].users.1.number}}</h4>
+          </div>
+          <div class="modal-body">
+            <div class="media" ng-repeat="message in data[selected].messages">
+              <img class="pull-left" class="media-object" src="http://www.gravatar.com/avatar/{{message.user.md5}}?d=identicon&s=40&r=g" alt="message.user.email">
+              <div class="media-body">
+                <h4 class="media-heading">{{message.message}}</h4>
+                {{message.created}}
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+          </div>
+        </div><!-- /.modal-content -->
+      </div><!-- /.modal-dialog -->
+    </div><!-- /.modal -->
+  </div> <!-- /container -->
+
+
+
+    <script src="//ajax.googleapis.com/ajax/libs/jquery/1.10.2/jquery.min.js"></script>
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.0.7/angular.min.js"></script>
+    <script src="//netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
     <script src="./app.js"></script>
   </body>
 </html>

@@ -43,6 +43,13 @@ class Proxy
         $this->collection = $db->$collection;
     }
 
+    /**
+     * A user would like to chat, assign them to another user (if there's one waiting), or just add them to their own
+     * chat and wait for another user.
+     *
+     * @param $number
+     * @param $email
+     */
     public function startChat($number, $email)
     {
         $this->log($number, 'starting chat');
@@ -80,6 +87,11 @@ class Proxy
         $this->sendSMS($user['number'], 'Waiting for another user...');
     }
 
+    /**
+     * Mark the chat as ended, and let both users know.
+     *
+     * @param $number
+     */
     public function endChat($number)
     {
         //close chat
@@ -94,6 +106,12 @@ class Proxy
         }
     }
 
+    /**
+     * Check if the number is in an active chat, wants to start a chat, or has no idea what's going on.
+     *
+     * @param $number
+     * @param $message
+     */
     public function processMessage($number, $message)
     {
         $this->log($number, 'processing: ' . $message);
@@ -134,6 +152,14 @@ class Proxy
         $this->sendSMS($number, 'To chat, text your email address.');
     }
 
+    /**
+     * Pull a specific chat from storage, optionally make an update to the chat before returning it. Default is to
+     * lookup by number, but if an array is passed, that will be used as the query.
+     *
+     * @param string|array $number
+     * @param array $update
+     * @return array|null
+     */
     protected function getChat($number, $update = null)
     {
         //number can optionally be a query
@@ -157,11 +183,32 @@ class Proxy
         );
     }
 
+    /**
+     * Get all active chats.
+     */
+    protected function getChats()
+    {
+        return $this->collection->find(array('active' => true));
+    }
+
+    /**
+     * Could be used to validate number (is a customer, is in the right country, etc). Should throw an exception on
+     * failure.
+     *
+     * @param string $number
+     * @return string
+     */
     protected function validateNumber($number)
     {
         return $number;
     }
 
+    /**
+     * Send a message to the number. Pretty simple really.
+     *
+     * @param $to
+     * @param $text
+     */
     protected function sendSMS($to, $text)
     {
         $this->log($to, 'sending message: ' . $text);
@@ -173,11 +220,46 @@ class Proxy
                 $this->log($to, $message->{'message-id'});
             }
         }
-
     }
 
+    /**
+     * Simple log wrapper.
+     *
+     * @param string $number
+     * @param string $text
+     */
     protected function log($number, $text)
     {
         error_log("[$number] $text");
+    }
+
+    /**
+     * Get a serializable snapshot of the proxy. Do some data manipulation to make things easier client side.
+     *
+     * For PHP > 5.4 JsonSerializable would be used.
+     */
+    public function __toArray()
+    {
+        return array_map(function($data){
+            //make friendly ids
+            $data['id'] = (string) $data['_id'];
+            unset($data['_id']);
+
+            //add user info to each message log (this could be refactored)
+            $userMap = array();
+            foreach($data['users'] as $user){
+                $userMap[$user['number']] = $user;
+            }
+
+            //add the user info and update the timestamps
+            if(isset($data['messages'])){
+                foreach($data['messages'] as $index => $message){
+                    $data['messages'][$index]['user'] = $userMap[$message['number']];
+                    $data['messages'][$index]['created'] = date('r', $message['created']->sec);
+                }
+            }
+
+            return $data;
+        }, iterator_to_array($this->getChats()));
     }
 }
