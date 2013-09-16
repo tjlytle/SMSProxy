@@ -59,7 +59,7 @@ class Proxy
         $user = array(
             'number'  => $number,
             'email'   => $email,
-            'md5'     => md5($email),
+            'md5'     => md5(trim(strtolower($email))),
             'created' => new MongoDate()
         );
 
