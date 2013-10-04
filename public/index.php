@@ -11,7 +11,7 @@ require_once __DIR__ . '/../bootstrap.php'; //credentials and such
 $mongo = new MongoClient(MONGO);
 $db = $mongo->proxy;
 $nexmo = new Nexmo(NEXMO_KEY, NEXMO_SECRET);
-$proxy = new Proxy($nexmo, $db);
+$proxy = new Pirate($nexmo, $db);
 
 //request looks to be from Nexmo
 $request = array_merge($_GET, $_POST); //method configurable via Nexmo API / Dashboard

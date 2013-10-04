@@ -7,4 +7,5 @@ defined('NEXMO_SECRET') || (getenv('NEXMO_SECRET') AND define('NEXMO_SECRET', ge
 defined('MONGO') || (getenv('MONGO') AND define('MONGO', getenv('MONGO')));
 
 require_once __DIR__ . '/src/Proxy.php';
+require_once __DIR__ . '/src/Pirate.php';
 require_once __DIR__ . '/src/Nexmo.php';
