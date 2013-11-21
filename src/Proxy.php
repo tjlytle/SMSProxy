@@ -7,11 +7,6 @@ class Proxy
     const COLLECTION = 'chats';
 
     /**
-     * @var string
-     */
-    protected $from;
-
-    /**
      * @var Nexmo
      */
     protected $nexmo;
@@ -30,15 +25,12 @@ class Proxy
      * Create a new proxy service.
      *
      * @param Nexmo $nexmo
-     * @param $from
      * @param MongoDB $db
      * @param string $collection
      */
-    public function __construct(Nexmo $nexmo, $from, MongoDB $db, $collection = self::COLLECTION)
+    public function __construct(Nexmo $nexmo, MongoDB $db, $collection = self::COLLECTION)
     {
         $this->nexmo = $nexmo;
-        $this->from  = $from;
-
         $this->db = $db;
         $this->collection = $db->$collection;
     }
@@ -47,16 +39,18 @@ class Proxy
      * A user would like to chat, assign them to another user (if there's one waiting), or just add them to their own
      * chat and wait for another user.
      *
-     * @param $number
-     * @param $email
+     * @param string $number User's Number
+     * @param string $from   Proxy Number (the number the user sent the sms to)
+     * @param string $email  User's email (for gravatar)
      */
-    public function startChat($number, $email)
+    public function startChat($number, $from, $email)
     {
         $this->log($number, 'starting chat');
         $number = $this->validateNumber($number);
 
         //new user
         $user = array(
+            'proxy'   => $from,
             'number'  => $number,
             'email'   => $email,
             'md5'     => md5(trim(strtolower($email))),
@@ -73,7 +67,7 @@ class Proxy
         if($chat){
             $this->log($number, 'chat found, user added');
             foreach($chat['users'] as $user){
-                $this->sendSMS($user['number'], 'Connected, text #end to stop.');
+                $this->sendSMS($user['number'], $user['proxy'], 'Connected, text #end to stop.');
             }
             return;
         }
@@ -84,7 +78,7 @@ class Proxy
         $this->collection->insert($chat);
 
         //send waiting message
-        $this->sendSMS($user['number'], 'Waiting for another user...');
+        $this->sendSMS($user['number'], $user['proxy'], 'Waiting for another user...');
     }
 
     /**
@@ -101,7 +95,7 @@ class Proxy
         //send confirm to users
         if($chat){
             foreach($chat['users'] as $user){
-                $this->sendSMS($user['number'], 'Thanks for chatting. Text your email address to start chat.');
+                $this->sendSMS($user['number'], $user['proxy'], 'Thanks for chatting. Text your email address to start chat.');
             }
         }
     }
@@ -109,10 +103,11 @@ class Proxy
     /**
      * Check if the number is in an active chat, wants to start a chat, or has no idea what's going on.
      *
-     * @param $number
-     * @param $message
+     * @param string $number  User's number
+     * @param string $from    Inbound number
+     * @param string $message SMS Body
      */
-    public function processMessage($number, $message)
+    public function processMessage($number, $from, $message)
     {
         $this->log($number, 'processing: ' . $message);
         $message = array(
@@ -135,7 +130,7 @@ class Proxy
                         if($user['number'] == $number){
                             continue;
                         }
-                        $this->sendSMS($user['number'], $message['message']);
+                        $this->sendSMS($user['number'], $user['proxy'], $message['message']);
                     }
                     break;
             }
@@ -144,12 +139,12 @@ class Proxy
 
         $email = filter_var($message['message'], FILTER_VALIDATE_EMAIL);
         if($email){
-            $this->startChat($number, $email);
+            $this->startChat($number, $from, $email);
             return;
         }
 
         $this->log($number, 'chat not found, sending help');
-        $this->sendSMS($number, 'To chat, text your email address.');
+        $this->sendSMS($number, $from, 'To chat, text your email address.');
     }
 
     /**
@@ -207,12 +202,13 @@ class Proxy
      * Send a message to the number. Pretty simple really.
      *
      * @param $to
+     * @param $from
      * @param $text
      */
-    protected function sendSMS($to, $text)
+    protected function sendSMS($to, $from, $text)
     {
         $this->log($to, 'sending message: ' . $text);
-        $result = $this->nexmo->sendSMS($to, $this->from, $text);
+        $result = $this->nexmo->sendSMS($to, $from, $text);
         foreach($result->messages as $message){
             if(isset($message->{'error-text'})){
                 $this->log($to, $message->{'error-text'});

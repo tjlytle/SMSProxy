@@ -11,13 +11,13 @@ require_once __DIR__ . '/../bootstrap.php'; //credentials and such
 $mongo = new MongoClient(MONGO);
 $db = $mongo->proxy;
 $nexmo = new Nexmo(NEXMO_KEY, NEXMO_SECRET);
-$proxy = new Proxy($nexmo, NEXMO_FROM, $db);
+$proxy = new Proxy($nexmo, $db);
 
 //request looks to be from Nexmo
 $request = array_merge($_GET, $_POST); //method configurable via Nexmo API / Dashboard
-if(isset($request['msisdn'], $request['text'])){
+if(isset($request['msisdn'], $request['to'], $request['text'])){
     try{
-        $proxy->processMessage($_REQUEST['msisdn'], $_REQUEST['text']);
+        $proxy->processMessage($request['msisdn'], $request['to'], $request['text']);
     } catch (Exception $e) {
         error_log($e); //NOTE: if you want Nexmo to retry, just give a non-2XX response
     }
