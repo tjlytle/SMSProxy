@@ -4,7 +4,7 @@
  */
 class Pirate extends Proxy
 {
-    public function sendSMS($to, $text)
+    public function sendSMS($to, $from, $text)
     {
         try{
             $this->log($to, 'trying to translate');
@@ -15,7 +15,7 @@ class Pirate extends Proxy
                 throw new Exception('translation failed');
             }
 
-            parent::sendSMS($to, $translate['translation']['pirate']);
+            parent::sendSMS($to, $from, $translate['translation']['pirate']);
         } catch (Exception $e) {
             $this->log($to, $e->getMessage());
             parent::sendSMS($to, $text);
