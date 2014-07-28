@@ -1,7 +1,4 @@
 <?php
-/**
- * @author Tim Lytle <tim@timlytle.net>
- */
 class Pirate extends Proxy
 {
     public function sendSMS($to, $from, $text)
@@ -18,7 +15,7 @@ class Pirate extends Proxy
             parent::sendSMS($to, $from, $translate['translation']['pirate']);
         } catch (Exception $e) {
             $this->log($to, $e->getMessage());
-            parent::sendSMS($to, $text);
+            parent::sendSMS($to, $from, $text);
         }
 
     }

@@ -23,7 +23,7 @@ Then point your [Nexmo number to your server][3].
 *If you're using a local develpoment server, make sure it can be reached by Nexmo so incoming messages can be routed
 correctly. [Forward][1], or [Runscope's Passageway][2] make this easy.
 
-Edit the configuration in `/bootstrap.php`, or define that configuration in your environment variables.
+Edit the configuration in `.local.php`, or define that configuration in your environment variables.
 
 ## Usage
 

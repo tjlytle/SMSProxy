@@ -1,8 +1,6 @@
 <?php
 /**
  * Simple wrapper for HTTP calls.
- *
- * @author Tim Lytle <tim@timlytle.net>
  */
 class Nexmo
 {

@@ -3,15 +3,18 @@ require_once __DIR__ . '/../bootstrap.php'; //credentials and such
 
 /**
  * Very Simple Request Router
- *
- * @author Tim Lytle <tim@timlytle.net>
  */
 
 //some common setup, not really needed for serving the UI, but whatever - can you say premature optimization?
 $mongo = new MongoClient(MONGO);
 $db = $mongo->proxy;
 $nexmo = new Nexmo(NEXMO_KEY, NEXMO_SECRET);
-$proxy = new Pirate($nexmo, $db);
+
+if(PIRATE){
+    $proxy = new Pirate($nexmo, $db);
+} else {
+    $proxy = new Proxy($nexmo, $db);
+}
 
 //request looks to be from Nexmo
 $request = array_merge($_GET, $_POST); //method configurable via Nexmo API / Dashboard

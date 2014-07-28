@@ -1,7 +1,4 @@
 <?php
-/**
- * @author Tim Lytle <tim@timlytle.net>
- */
 class Proxy
 {
     const COLLECTION = 'chats';
