@@ -69,7 +69,7 @@ Nexmo API is all it takes to send the message.
 With that, the conversation has been proxied. Both users are sending messages to the same Nexmo virtual number, and 
 both users are receiving messages from that same number. But neither user knows the other's number.
 
-Now just point one of your Nexmo numbers at [this script](https://github.com/Nexmo/Proxy/blob/master/how-to/index.php)
+Just point one of your Nexmo numbers at [this script](https://github.com/Nexmo/Proxy/blob/master/how-to/index.php)
 to see it in action.
 
 ## Next Steps
