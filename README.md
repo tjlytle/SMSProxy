@@ -18,7 +18,7 @@ Using a Nexmo virtual number, you can easily mask user to user conversations, ac
 Here's how to implement a simple number proxy in PHP. Let's start with a simple array associating pairs of numbers.
 
     $proxy = array(
-        array('14843472194', '18123276810')
+        array('14845551212', '18125551212')
     );
 
 [*View in Context*](https://github.com/Nexmo/Proxy/blob/master/how-to/index.php#L13-L15)

@@ -11,7 +11,7 @@ if(!isset($request['msisdn']) OR !isset($request['to']) OR !isset($request['text
 require_once __DIR__ . '/../config.php';
 
 $proxy = array(
-    array('14843472194', '18123276810')
+    array('14845551212', '18125551212')
 );
 
 $found = false;
