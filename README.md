@@ -83,7 +83,7 @@ Instead of just looking up the proxy pair using the sender's number, the proxied
 the sender's number and the virtual number the message was sent to.
 
 Now you can proxy multiple conversations involving the same user. This requires a pool of virtual numbers, but only 
-as many as the number of concurrent conversations you expect a single use to maintain.
+as many as the number of concurrent conversations you expect a single user to maintain.
 
 ## Demo Application
 This example is pretty simple, but there's also a full - albeit silly - demo application based on the same concept. 
