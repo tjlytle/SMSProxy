@@ -8,7 +8,8 @@ require_once __DIR__ . '/../bootstrap.php'; //credentials and such
 //some common setup, not really needed for serving the UI, but whatever - can you say premature optimization?
 $mongo = new MongoClient(MONGO);
 $db = $mongo->proxy;
-$nexmo = new Nexmo(NEXMO_KEY, NEXMO_SECRET);
+$basic = new \Nexmo\Client\Credentials\Basic(NEXMO_KEY, NEXMO_SECRET);
+$nexmo = new \Nexmo\Client($basic);
 
 if(PIRATE){
     $proxy = new Pirate($nexmo, $db);
@@ -17,14 +18,14 @@ if(PIRATE){
 }
 
 //request looks to be from Nexmo
-$request = array_merge($_GET, $_POST); //method configurable via Nexmo API / Dashboard
-if(isset($request['msisdn'], $request['to'], $request['text'])){
-    try{
-        $proxy->processMessage($request['msisdn'], $request['to'], $request['text']);
-    } catch (Exception $e) {
-        error_log($e); //NOTE: if you want Nexmo to retry, just give a non-2XX response
+try{
+    $inbound = \Nexmo\Message\InboundMessage::createFromGlobals();
+    if($inbound->isValid()){
+        $proxy->processMessage($inbound);
+        return;
     }
-    return;
+} catch (Exception $e) {
+    error_log($e->getMessage());
 }
 
 //request look to be for API

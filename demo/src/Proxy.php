@@ -4,7 +4,7 @@ class Proxy
     const COLLECTION = 'chats';
 
     /**
-     * @var Nexmo
+     * @var Nexmo\Client
      */
     protected $nexmo;
 
@@ -25,7 +25,7 @@ class Proxy
      * @param MongoDB $db
      * @param string $collection
      */
-    public function __construct(Nexmo $nexmo, MongoDB $db, $collection = self::COLLECTION)
+    public function __construct(Nexmo\Client $nexmo, MongoDB $db, $collection = self::COLLECTION)
     {
         $this->nexmo = $nexmo;
         $this->db = $db;
@@ -45,18 +45,22 @@ class Proxy
         $this->log($number, 'starting chat');
         $number = $this->validateNumber($number);
 
+        $eparts = explode('@', $email);
+
         //new user
         $user = array(
             'proxy'   => $from,
             'number'  => $number,
             'email'   => $email,
+            'domain'  => $eparts[1],
+            'user'    => $eparts[0],
             'md5'     => md5(trim(strtolower($email))),
             'created' => new MongoDate()
         );
 
-        //find open chat, and add the new number
+        //find open chat from a different domain, and add the new number
         $chat = $this->getChat(
-            array('users' => array('$size' => 1), 'active' => true),
+            array('users' => array('$size' => 1), 'active' => true, 'users.domain' => ['$ne' => $eparts[1]]),
             array('$push' => array('users' => $user))
         );
 
@@ -104,8 +108,12 @@ class Proxy
      * @param string $from    Inbound number
      * @param string $message SMS Body
      */
-    public function processMessage($number, $from, $message)
+    public function processMessage(\Nexmo\Message\InboundMessage $inboundMessage)
     {
+        $number = $inboundMessage->getFrom();
+        $from   = $inboundMessage->getTo();
+        $message = $inboundMessage->getBody();
+        
         $this->log($number, 'processing: ' . $message);
         $message = array(
             'number'  => $number,
@@ -205,14 +213,13 @@ class Proxy
     protected function sendSMS($to, $from, $text)
     {
         $this->log($to, 'sending message: ' . $text);
-        $result = $this->nexmo->sendSMS($to, $from, $text);
-        foreach($result->messages as $message){
-            if(isset($message->{'error-text'})){
-                $this->log($to, $message->{'error-text'});
-            } else {
-                $this->log($to, $message->{'message-id'});
-            }
-        }
+        $message = $this->nexmo->message()->send([
+            'to' => $to,
+            'from' => $from,
+            'text' => $text
+        ]);
+
+        $this->log($to, $message['message-id']);
     }
 
     /**
